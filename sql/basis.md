@@ -1,9 +1,8 @@
+# SELECT
+
 ## Recyclable and Low Fat Products
 
 > https://leetcode.com/problems/recyclable-and-low-fat-products/description/?envType=study-plan-v2&envId=sql-free-50
-
----
-- **Step 1**: [Describe the ...]
 
 ```sql
 SELECT p.product_id 
@@ -54,6 +53,13 @@ SELECT tweet_id
 FROM Tweets
 WHERE CHAR_LENGTH(content) > 15
 ```
+
+
+# JOIN
+- INNER JOIN/JOIN: Returns only the rows where there is a match in both tables based on the specified condition. It excludes rows that do not meet the condition in either table. JOIN is shorthand for INNER JOIN.
+- LEFT/RIGHT JOIN: Retains all rows from the left or right table as the base and selects matching rows from the other table, filling unmatched rows with NULL.
+- FULL JOIN: Retains all rows from both tables, combining matching rows and filling unmatched rows with NULL.
+- CROSS JOIN: Returns the Cartesian product of both tables, creating all possible combinations of rows.
 
 ## Replace Employee ID With The Unique Identifier
 
@@ -143,4 +149,86 @@ SELECT machine_id, ROUND(
 AS processing_time 
 FROM Activity a 
 GROUP BY machine_id
+```
+
+## Employee Bonus
+
+> https://leetcode.com/problems/employee-bonus/description/?envType=study-plan-v2&envId=sql-free-50
+
+```sql
+SELECT name, bonus FROM Employee 
+LEFT JOIN Bonus
+ON Employee.EmpId = Bonus.EmpId
+WHERE bonus IS NULL OR bonus < 1000
+```
+
+## Students and Examinations
+
+> https://leetcode.com/problems/students-and-examinations/description/?envType=study-plan-v2&envId=sql-free-50
+
+```sql
+SELECT 
+    s.student_id, s.student_name, sub.subject_name, IFNULL(grouped.attended_exams, 0) AS attended_exams
+FROM 
+    Students s
+CROSS JOIN 
+    Subjects sub
+LEFT JOIN (
+    SELECT student_id, subject_name, COUNT(*) AS attended_exams
+    FROM Examinations
+    GROUP BY student_id, subject_name
+) grouped 
+ON s.student_id = grouped.student_id 
+AND sub.subject_name = grouped.subject_name
+ORDER BY s.student_id, sub.subject_name;
+```
+
+## Managers with at Least 5 Direct Reports
+
+> https://leetcode.com/problems/managers-with-at-least-5-direct-reports/description/?envType=study-plan-v2&envId=sql-free-50
+
+```sql
+SELECT Name FROM (
+    SELECT Manager.Name AS Name, count(Report.Id) AS cnt
+    FROM Employee AS Manager 
+    INNER JOIN Employee AS Report
+    ON Manager.Id = Report.ManagerId
+    GROUP BY Manager.Id
+) AS ReportCount
+WHERE cnt >= 5
+```
+or
+```sql
+SELECT Manager.Name AS Name
+FROM Employee AS Manager
+JOIN Employee AS Report
+ON Manager.Id = Report.ManagerId
+GROUP BY Manager.Id
+HAVING count(Report.Id) >= 5
+```
+or
+```sql
+SELECT Employee.Name AS Name
+FROM (
+    SELECT ManagerId as Id
+    From Employee
+    GROUP BY ManagerId
+    having count(Id) >= 5
+) AS Manager 
+JOIN Employee
+ON Manager.Id = Employee.Id
+```
+
+## Confirmation Rate
+
+> https://leetcode.com/problems/confirmation-rate/description/?envType=study-plan-v2&envId=sql-free-50
+
+```sql
+SELECT s.user_id,ROUND(
+    IFNULL(AVG(c.action = 'confirmed'), 0), 2
+) AS confirmation_rate
+FROM Signups AS s
+LEFT JOIN Confirmations AS c
+ON s.user_id = c.user_id
+GROUP BY s.user_id
 ```
