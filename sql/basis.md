@@ -43,7 +43,7 @@ WHERE CHAR_LENGTH(content) > 15
 ```
 
 
-### JOIN
+#### JOIN
 - INNER JOIN/JOIN: Returns only the rows where there is a match in both tables based on the specified condition. It excludes rows that do not meet the condition in either table. JOIN is shorthand for INNER JOIN.
 - LEFT/RIGHT JOIN: Retains all rows from the left or right table as the base and selects matching rows from the other table, filling unmatched rows with NULL.
 - FULL JOIN: Retains all rows from both tables, combining matching rows and filling unmatched rows with NULL.
@@ -360,4 +360,84 @@ WHERE (player_id, event_date) IN (
     FROM Activity
     GROUP BY player_id
 )
+```
+
+#### [Number of Unique Subjects Taught by Each Teacher](https://leetcode.com/problems/number-of-unique-subjects-taught-by-each-teacher/description/?envType=study-plan-v2&envId=sql-free-50)
+
+Write a solution to calculate the number of unique subjects each teacher teaches in the university.
+
+```sql
+SELECT teacher_id, COUNT(DISTINCT subject_id) AS cnt
+FROM Teacher
+GROUP BY teacher_id
+```
+
+#### [User Activity for the Past 30 Days I](https://leetcode.com/problems/user-activity-for-the-past-30-days-i/description/?envType=study-plan-v2&envId=sql-free-50)
+
+Write a solution to find the daily active user count for a period of 30 days ending 2019-07-27 inclusively. A user was active on someday if they made at least one activity on that day.
+
+```sql
+SELECT activity_date AS day, COUNT(DISTINCT user_id) AS active_users
+FROM Activity
+WHERE DATEDIFF("2019-07-27", activity_date) 
+BETWEEN 0 AND 29
+GROUP BY activity_date
+```
+
+#### [Sales Analysis III](https://leetcode.com/problems/sales-analysis-iii/description/?envType=study-plan-v2&envId=sql-free-50)
+
+Write a solution to report the products that were only sold in the first quarter of 2019. That is, between 2019-01-01 and 2019-03-31 inclusive.
+
+```sql
+SELECT sales.product_id AS product_id, 
+    product.product_name AS product_name
+FROM sales
+LEFT JOIN product 
+ON sales.product_id = product.product_id
+GROUP BY product_id
+HAVING COUNT(sale_date BETWEEN '2019-01-01' AND '2019-03-31' OR NULL) = COUNT(*)
+```
+
+#### [Classes More Than 5 Students](https://leetcode.com/problems/classes-more-than-5-students/description/?envType=study-plan-v2&envId=sql-free-50)
+
+Write a solution to find all the classes that have at least five students.
+
+```sql
+SELECT class FROM Courses
+GROUP BY class
+HAVING COUNT(student) >= 5
+```
+
+#### [Find Followers Count](https://leetcode.com/problems/find-followers-count/description/?envType=study-plan-v2&envId=sql-free-50)
+
+Write a solution that will, for each user, return the number of followers.
+
+```sql
+SELECT user_id, COUNT(follower_id) AS followers_count
+FROM Followers 
+GROUP BY user_id
+ORDER BY user_id ASC
+```
+
+#### [Biggest Single Number](https://leetcode.com/problems/biggest-single-number/description/?envType=study-plan-v2&envId=sql-free-50)
+
+A single number is a number that appeared only once in the MyNumbers table. Find the largest single number. If there is no single number, report null.
+
+```sql
+SELECT NULL AS num
+UNION 
+SELECT num FROM MyNumbers
+GROUP BY num HAVING COUNT(1) = 1
+ORDER BY num DESC
+LIMIT 1
+```
+
+#### [Customers Who Bought All Products](https://leetcode.com/problems/customers-who-bought-all-products/description/?envType=study-plan-v2&envId=sql-free-50)
+
+Write a solution to report the customer ids from the Customer table that bought all the products in the Product table.
+
+```sql
+SELECT customer_id FROM Customer
+GROUP BY customer_id
+HAVING COUNT(DISTINCT(product_key)) = (SELECT COUNT(*) FROM Product)
 ```
