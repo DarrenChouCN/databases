@@ -441,3 +441,76 @@ SELECT customer_id FROM Customer
 GROUP BY customer_id
 HAVING COUNT(DISTINCT(product_key)) = (SELECT COUNT(*) FROM Product)
 ```
+
+#### [The Number of Employees Which Report to Each Employee](https://leetcode.com/problems/the-number-of-employees-which-report-to-each-employee/description/?envType=study-plan-v2&envId=sql-free-50)
+
+Write a solution to report the ids and the names of all managers, the number of employees who report directly to them, and the average age of the reports rounded to the nearest integer.
+
+```sql
+SELECT m.employee_id, m.name, 
+    COUNT(*) AS reports_count, ROUND(AVG(e.age) ,0) AS average_age
+FROM Employees e
+JOIN Employees m
+ON e.reports_to = m.employee_id
+GROUP BY m.employee_id
+ORDER BY employee_id
+```
+
+#### [Primary Department for Each Employee](https://leetcode.com/problems/primary-department-for-each-employee/description/?envType=study-plan-v2&envId=sql-free-50)
+
+Write a solution to report all the employees with their primary department. For employees who belong to one department, report their only department.
+
+```sql
+WITH t AS (
+    SELECT employee_id, department_id, primary_flag,
+        COUNT(*) OVER(PARTITION BY employee_id) AS count_over
+    FROM Employee
+)
+SELECT employee_id, department_id
+FROM t
+WHERE count_over = 1 or primary_flag = 'Y'
+```
+or
+```sql
+SELECT employee_id, IF(
+        COUNT(department_id) = 1, department_id, MAX(CASE primary_flag WHEN 'Y' THEN department_id END)
+    ) AS department_id
+FROM Employee
+GROUP BY employee_id
+```
+
+#### [Triangle Judgement](https://leetcode.com/problems/triangle-judgement/description/?envType=study-plan-v2&envId=sql-free-50)
+
+Report for every three line segments whether they can form a triangle.
+
+```sql
+SELECT x, y, z,
+CASE
+    WHEN x + y > z AND x + z > y AND y + z > x THEN 'Yes' ELSE 'No'END  
+AS 'triangle'
+FROM triangle
+```
+
+#### [Consecutive Numbers](https://leetcode.com/problems/consecutive-numbers/description/?envType=study-plan-v2&envId=sql-free-50)
+
+Find all numbers that appear at least three times consecutively.
+
+```sql
+SELECT DISTINCT l1.num AS ConsecutiveNums
+FROM Logs l1
+JOIN Logs l2 ON l1.id = l2.id - 1
+JOIN Logs l3 ON l1.id = l3.id - 2
+WHERE l1.num = l2.num AND l1.num = l3.num;
+```
+or
+```sql
+WITH cte AS (
+    SELECT num,
+           LAG(num, 1) OVER (ORDER BY id) AS prev1,
+           LAG(num, 2) OVER (ORDER BY id) AS prev2
+    FROM Logs
+)
+SELECT DISTINCT num AS ConsecutiveNums
+FROM cte
+WHERE num = prev1 AND num = prev2;
+```
