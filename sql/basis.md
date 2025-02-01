@@ -514,3 +514,99 @@ SELECT DISTINCT num AS ConsecutiveNums
 FROM cte
 WHERE num = prev1 AND num = prev2;
 ```
+
+#### [Product Price at a Given Date](https://leetcode.com/problems/product-price-at-a-given-date/description/?envType=study-plan-v2&envId=sql-free-50)
+
+Write a solution to find the prices of all products on 2019-08-16. Assume the price of all products before any change is 10.
+
+```sql
+WITH LatestPriceChanges AS (
+    SELECT
+        product_id,
+        new_price,
+        change_date,
+        ROW_NUMBER() OVER (PARTITION BY product_id ORDER BY change_date DESC) AS rn
+    FROM Products
+    WHERE change_date <= '2019-08-16'
+)
+SELECT
+    p.product_id,
+    COALESCE(lpc.new_price, 10) AS price
+FROM
+    (SELECT DISTINCT product_id FROM Products) p
+LEFT JOIN
+    LatestPriceChanges lpc
+ON
+    p.product_id = lpc.product_id AND lpc.rn = 1;
+```
+
+#### [Last Person to Fit in the Bus](https://leetcode.com/problems/last-person-to-fit-in-the-bus/description/?envType=study-plan-v2&envId=sql-free-50)
+
+Write a solution to find the person_name of the last person that can fit on the bus without exceeding the weight limit. The test cases are generated such that the first person does not exceed the weight limit.
+
+```sql
+WITH CumulativeWeights AS (
+    SELECT
+        person_id,
+        person_name,
+        weight,
+        turn,
+        SUM(weight) OVER (ORDER BY turn) AS cumulative_weight
+    FROM
+        Queue
+)
+SELECT
+    person_name
+FROM
+    CumulativeWeights
+WHERE
+    cumulative_weight <= 1000
+ORDER BY
+    turn DESC
+LIMIT 1;
+```
+
+#### [Count Salary Categories](https://leetcode.com/problems/count-salary-categories/description/?envType=study-plan-v2&envId=sql-free-50)
+
+Write a solution to calculate the number of bank accounts for each salary category. The salary categories are:
+- "Low Salary": All the salaries strictly less than $20000.
+- "Average Salary": All the salaries in the inclusive range [$20000, $50000].
+- "High Salary": All the salaries strictly greater than $50000.
+
+The result table must contain all three categories. If there are no accounts in a category, return 0.
+```sql
+SELECT 'Low Salary' AS category, COUNT(*) AS accounts_count
+FROM Accounts
+WHERE income < 20000
+UNION ALL
+SELECT 'Average Salary' AS category, COUNT(*) AS accounts_count
+FROM Accounts
+WHERE income BETWEEN 20000 AND 50000
+UNION ALL
+SELECT 'High Salary' AS category, COUNT(*) AS accounts_count
+FROM Accounts
+WHERE income > 50000;
+```
+
+#### [Employees Whose Manager Left the Company](https://leetcode.com/problems/employees-whose-manager-left-the-company/?envType=study-plan-v2&envId=sql-free-50)
+
+Find the IDs of the employees whose salary is strictly less than $30000 and whose manager left the company. When a manager leaves the company, their information is deleted from the Employees table, but the reports still have their manager_id set to the manager that left.
+
+Return the result table ordered by employee_id.
+
+```sql
+SELECT employee_id 
+FROM Employees
+where salary < 30000 
+	AND manager_id NOT IN (SELECT employee_id FROM Employees)
+ORDER BY employee_id
+```
+or
+```sql
+SELECT e1.employee_id
+FROM Employees e1
+LEFT JOIN Employees e2
+ON e1.manager_id = e2.employee_id
+WHERE e1.salary < 30000 AND e1.manager_id IS NOT NULL AND e2.employee_id IS NULL
+ORDER BY e1.employee_id
+```
