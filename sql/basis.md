@@ -610,3 +610,74 @@ ON e1.manager_id = e2.employee_id
 WHERE e1.salary < 30000 AND e1.manager_id IS NOT NULL AND e2.employee_id IS NULL
 ORDER BY e1.employee_id
 ```
+
+
+#### [Exchange Seats](https://leetcode.com/problems/exchange-seats/description/?envType=study-plan-v2&envId=sql-free-50)
+
+Write a solution to swap the seat id of every two consecutive students. If the number of students is odd, the id of the last student is not swapped.
+
+Return the result table ordered by id in ascending order.
+
+```sql
+SELECT (
+    CASE
+        WHEN MOD(id, 2) != 0 AND counts != id THEN id + 1
+        WHEN MOD(id, 2) != 0 AND counts = id THEN id
+        ELSE id - 1 END
+) AS id, student
+FROM 
+    seat, (SELECT COUNT(*) AS counts FROM seat) AS counts
+ORDER BY id ASC;
+```
+or
+```sql
+SELECT (
+    CASE 
+        WHEN id % 2 = 0 THEN id - 1
+        WHEN id % 2 = 1 AND id < (SELECT MAX(id) FROM Seat) THEN id + 1
+        ELSE id
+        END
+) id, student FROM Seat
+ORDER BY id;
+```
+
+#### [Movie Rating](https://leetcode.com/problems/movie-rating/description/?envType=study-plan-v2&envId=sql-free-50)
+
+Write a solution to:
+
+Find the name of the user who has rated the greatest number of movies. In case of a tie, return the lexicographically smaller user name.
+Find the movie name with the highest average rating in February 2020. In case of a tie, return the lexicographically smaller movie name.
+
+```sql
+(
+    SELECT u.name AS results
+    FROM Users u
+    LEFT JOIN MovieRating mr ON u.user_id = mr.user_id
+    GROUP BY u.user_id
+    ORDER BY COUNT(*) DESC, name ASC
+    LIMIT 1
+)
+UNION ALL
+(
+    SELECT title AS results
+    FROM Movies m
+    LEFT JOIN MovieRating mr ON m.movie_id = mr.movie_id
+    AND YEAR(mr.created_at) = 2020 
+    AND MONTH(mr.created_at) = 2
+    GROUP BY mr.movie_id
+    ORDER BY AVG(mr.rating) DESC, title
+    LIMIT 1
+)
+```
+
+#### [Restaurant Growth](https://leetcode.com/problems/restaurant-growth/?envType=study-plan-v2&envId=sql-free-50)
+
+You are the restaurant owner and you want to analyze a possible expansion (there will be at least one customer every day).
+
+Compute the moving average of how much the customer paid in a seven days window (i.e., current day + 6 days before). average_amount should be rounded to two decimal places.
+
+Return the result table ordered by visited_on in ascending order.
+
+```sql
+
+```
